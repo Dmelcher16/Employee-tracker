@@ -1,0 +1,26 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dmelcher16/Employee-tracker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dmelcher16/Employee-tracker/issues"
+  },
+  "homepage": "https://github.com/Dmelcher16/Employee-tracker#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "fs": "0.0.1-security",
+    "inquirer": "^7.3.3",
+    "mysql": "^2.18.1"
+  }
+}
