@@ -1,31 +1,48 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
 
+let connection = mysql.createConnection({
+    host: "localhost",
+
+    port: 3306,
+
+    user: "root",
+
+    password: "root",
+    database: "empTracker",
+});
+
+connection.connect(function(err) {
+    if (err) throw err;
+    console.log("connected!");
+});
+
+
 function main() {
     inquirer
-        .prompt([{
-            type: "list",
-            message: "What would you like to do?",
-            choices: [
-                "View all employees",
-                "View all roles",
-                "View all departments",
-                "Add a department",
-                "Add a role",
-                "Add an employee",
-                "Update Employees' role",
-                "Quit"
-            ],
-            name: "choice",
-        }, ])
-        .then((answers) => {
-            if (answers.choice === "View all employees") {
-                viewEmployees();
-            } else if (answers.choice === "View all departments") {
-                viewDepartments();
-            } else if (answers.choice === "View all roles") {
-                viewRoles();
-            } else if (answers.choice === "Add a department") {
+    .prompt([{
+        type: "list",
+        message: "What would you like to do?",
+        choices: [
+            "View all employees",
+            "View all roles",
+            "View all departments",
+            "Add a department",
+            "Add a role",
+            "Add an employee",
+            "Update Employees' role",
+            "Quit"
+        ],
+        name: "choice",
+    }, ])
+    .then((answers) => {
+        if (answers.choice === "View all employees") {
+            viewEmployees();
+        } else if (answers.choice === "View all departments") {
+            viewDepartments();
+        } else if (answers.choice === "View all roles") {
+            viewRoles();
+        } else if (answers.choice === "Add a department") {
                 addDepartment();
             } else if (answers.choice === "Add a role") {
                 newRole();
@@ -39,9 +56,9 @@ function main() {
                 connection.end();
             }
         });
-};
-
-function viewDepartments() {
+    };
+    
+    function viewDepartments() {
     connection.query("SELECT * FROM department", function(err, res) {
         if (err) throw err;
         console.table(res);
@@ -68,7 +85,7 @@ function viewRoles() {
 
 function addDepartment() {
     inquirer
-        .prompt([{
+    .prompt([{
             type: "prompt",
             message: "What is the name of the department you want to add?",
             name: "deptName",
@@ -80,21 +97,21 @@ function addDepartment() {
                     if (err) throw err;
                     main();
                 }
-            );
-        });
-};
-
-function newRole() {
-    connection.query("SELECT * FROM department", function(err, res) {
-        if (err) throw err;
-        newRolePrompts(res);
-    });
-}
-
-function newRolePrompts(nDept) {
-    console.log(nDept);
-    inquirer
-        .prompt([{
+                );
+            });
+        };
+        
+        function newRole() {
+            connection.query("SELECT * FROM department", function(err, res) {
+                if (err) throw err;
+                newRolePrompts(res);
+            });
+        }
+        
+        function newRolePrompts(nDept) {
+            console.log(nDept);
+            inquirer
+            .prompt([{
                 type: "list",
                 message: "What department is this role in?",
                 name: "roleDept",
@@ -122,50 +139,50 @@ function newRolePrompts(nDept) {
             console.log(salary);
             addRole(title, salary, dept);
         });
-}
-
-function addRole(title, salary, dept) {
-    connection.query(
-        `INSERT INTO role (title, salary, department_name) values ('${title}', '${salary}', '${dept}');`,
-        function(err, res) {
-            if (err) throw err;
-        }
-    );
-    main();
-}
-
-function newEmployee() {
-    connection.query("SELECT * FROM role", function(err, res1) {
-        if (err) throw err;
-
+    }
+    
+    function addRole(title, salary, dept) {
         connection.query(
-            "SELECT * FROM employee WHERE employeeRole='Manager'",
-            function(err, res2) {
+            `INSERT INTO role (title, salary, department_name) values ('${title}', '${salary}', '${dept}');`,
+            function(err, res) {
                 if (err) throw err;
-
-                newEmpPrompts(res1, res2);
             }
-        );
-    });
-}
-
-function newEmpPrompts(nRole, nManager) {
-    console.log(nRole);
-    inquirer
-        .prompt([{
-                type: "prompt",
-                message: "What is this employees first name?",
-                name: "firstName",
-            },
-            {
-                type: "prompt",
-                message: "What is this employees last name?",
-                name: "lastName",
-            },
-            {
-                type: "list",
-                message: "What role does this employee have?",
-                name: "role",
+            );
+            main();
+        }
+        
+        function newEmployee() {
+            connection.query("SELECT * FROM role", function(err, res1) {
+                if (err) throw err;
+                
+                connection.query(
+                    "SELECT * FROM employee WHERE employeeRole='Manager'",
+                    function(err, res2) {
+                        if (err) throw err;
+                        
+                        newEmpPrompts(res1, res2);
+                    }
+                    );
+                });
+            }
+            
+            function newEmpPrompts(nRole, nManager) {
+                console.log(nRole);
+                inquirer
+                .prompt([{
+                    type: "prompt",
+                    message: "What is this employees first name?",
+                    name: "firstName",
+                },
+                {
+                    type: "prompt",
+                    message: "What is this employees last name?",
+                    name: "lastName",
+                },
+                {
+                    type: "list",
+                    message: "What role does this employee have?",
+                    name: "role",
                 choices: nRole,
             },
             {
@@ -188,49 +205,49 @@ function newEmpPrompts(nRole, nManager) {
             console.log(manager);
             addEmp(fName, lName, role, manager);
         });
-}
-
-function addEmp(fName, lName, role, manager) {
-    connection.query(
-        `INSERT INTO employee (firstName, lastName, employeeRole, managerName) values ('${fName}', '${lName}', '${role}', '${manager}');`,
-        function(err, res) {
-            if (err) throw err;
-        }
-    );
-    main();
-}
-
-function updateEmployee() {
-    connection.query("SELECT * FROM role", function(err, res1) {
-        if (err) throw err;
-
+    }
+    
+    function addEmp(fName, lName, role, manager) {
         connection.query(
-            "SELECT firstName lastName FROM employee",
-            function(err, res2) {
+            `INSERT INTO employee (firstName, lastName, employeeRole, managerName) values ('${fName}', '${lName}', '${role}', '${manager}');`,
+            function(err, res) {
                 if (err) throw err;
-                console.log(res2)
-                updateEmpPrompts(res1, res2);
             }
-        );
-    });
-}
-
-function updateEmpPrompts(nChange, nUpdate) {
-    console.log(nChange);
-    inquirer
-        .prompt([{
-                type: "list",
-                message: "Which employee would you like to update?",
-                name: "empName",
-                choices: nUpdate,
-            },
-            {
-                type: "list",
-                message: "What role are they changing to?",
-                name: "role",
-                choices: nChange,
-            },
-        ])
+            );
+            main();
+        }
+        
+        function updateEmployee() {
+            connection.query("SELECT * FROM role", function(err, res1) {
+                if (err) throw err;
+                
+                connection.query(
+                    "SELECT firstName lastName FROM employee",
+                    function(err, res2) {
+                        if (err) throw err;
+                        console.log(res2)
+                        updateEmpPrompts(res1, res2);
+                    }
+                    );
+                });
+            }
+            
+            function updateEmpPrompts(nChange, nUpdate) {
+                console.log(nChange);
+                inquirer
+                .prompt([{
+                    type: "list",
+                    message: "Which employee would you like to update?",
+                    name: "empName",
+                    choices: nUpdate,
+                },
+                {
+                    type: "list",
+                    message: "What role are they changing to?",
+                    name: "role",
+                    choices: nChange,
+                },
+            ])
         .then((answers) => {
             console.log(answers);
             let x = Object.values(answers);
@@ -239,18 +256,19 @@ function updateEmpPrompts(nChange, nUpdate) {
             console.log(fName)
             console.log(role)
             updateRole(fName, role);
-
+            
         });
-}
-
-function updateRole(fName, role) {
-    connection.query(
-        `UPDATE employee SET employeeRole = '${role}' WHERE firstName = '${fName}';`,
-        function(err, res) {
-            if (err) throw err;
+    }
+    
+    function updateRole(fName, role) {
+        connection.query(
+            `UPDATE employee SET employeeRole = '${role}' WHERE firstName = '${fName}';`,
+            function(err, res) {
+                if (err) throw err;
+            }
+            );
+            main();
         }
-    );
-    main();
-}
-
-module.exports = main;
+        
+        main();
+        // module.exports = main;
