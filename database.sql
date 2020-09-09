@@ -1,7 +1,6 @@
-DROP DATABASE IF EXISTS db;
-CREATE DATABASE db;
-
-USE db;
+DROP DATABASE IF EXISTS empTracker;
+CREATE DATABASE empTracker;
+USE empTracker;
 
 
 CREATE TABLE department(
